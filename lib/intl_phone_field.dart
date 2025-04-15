@@ -37,8 +37,6 @@ class IntlPhoneField extends StatefulWidget {
   ///    which are more specialized input change notifications.
   final ValueChanged<PhoneNumber>? onChanged;
 
-  final ValueChanged<Country>? onCountryChanged;
-
   /// An optional method that validates an input. Returns an error string to display if the input is invalid, or null otherwise.
   ///
   /// A [PhoneNumber] is passed to the validator as argument.
@@ -124,15 +122,15 @@ class IntlPhoneField extends StatefulWidget {
   /// This property can be used to pre-fill the field.
   final String? initialValue;
 
-  final String languageCode;
-
   /// 2 letter ISO Code or country dial code.
   ///
   /// ```dart
   /// initialCountryCode: 'IN', // India
   /// initialCountryCode: '+225', // Côte d'Ivoire
+  /// when you pass an invalid `initialCountryCode`, it defaults to the first country in the list
+  /// Which the default List is Afghanistan
   /// ```
-  final String? initialCountryCode;
+  final String initialCountryCode;
 
   /// List of Country to display see countries.dart for format
   final List<Country>? countries;
@@ -163,12 +161,6 @@ class IntlPhoneField extends StatefulWidget {
 
   /// The style use for the country dial code.
   final TextStyle? dropdownTextStyle;
-
-  /// The text that describes the search input field.
-  ///
-  /// When the input field is empty and unfocused, the label is displayed on top of the input field (i.e., at the same location on the screen where text may be entered in the input field).
-  /// When the input field receives focus (or if the field is non-empty), the label moves above (i.e., vertically adjacent to) the input field.
-  final String searchText;
 
   /// Position of an icon [leading, trailing]
   final IconPosition dropdownIconPosition;
@@ -247,8 +239,7 @@ class IntlPhoneField extends StatefulWidget {
   const IntlPhoneField({
     Key? key,
     this.formFieldKey,
-    this.initialCountryCode,
-    this.languageCode = 'en',
+    required this.initialCountryCode,
     this.disableAutoFillHints = false,
     this.obscureText = false,
     this.textAlign = TextAlign.left,
@@ -266,13 +257,11 @@ class IntlPhoneField extends StatefulWidget {
     this.validator,
     this.onChanged,
     this.countries,
-    this.onCountryChanged,
     this.onSaved,
     this.showDropdownIcon = true,
     this.dropdownDecoration = const BoxDecoration(),
     this.enabled = true,
     this.keyboardAppearance,
-    @Deprecated('Use searchFieldInputDecoration of PickerDialogStyle instead') this.searchText = 'Search country',
     this.dropdownIconPosition = IconPosition.leading,
     this.dropdownIcon = const Icon(Icons.arrow_drop_down),
     this.autofocus = false,
@@ -310,18 +299,21 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
     _countryList = widget.countries ?? countries;
     filteredCountries = _countryList;
     number = widget.initialValue ?? '';
-    if (widget.initialCountryCode == null && number.startsWith('+')) {
+    if (number.startsWith('+')) {
       number = number.substring(1);
       // parse initial value
-      _selectedCountry = countries.firstWhere((country) => number.startsWith(country.fullCountryCode),
-          orElse: () => _countryList.first);
+      _selectedCountry = countries.firstWhere(
+        (country) => number.startsWith(country.fullCountryCode),
+        orElse: () => _countryList.first,
+      );
 
       // remove country code from the initial number value
       number = number.replaceFirst(RegExp("^${_selectedCountry.fullCountryCode}"), "");
     } else {
-      _selectedCountry = _countryList.firstWhere((item) => item.code == (widget.initialCountryCode ?? 'US'),
-          orElse: () => _countryList.first);
-
+      _selectedCountry = _countryList.firstWhere(
+        (item) => item.code == (widget.initialCountryCode),
+        orElse: () => _countryList.first,
+      );
       // remove country code from the initial number value
       if (number.startsWith('+')) {
         number = number.replaceFirst(RegExp("^\\+${_selectedCountry.fullCountryCode}"), "");
@@ -347,30 +339,6 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
         });
       }
     }
-  }
-
-  Future<void> _changeCountry() async {
-    filteredCountries = _countryList;
-    await showDialog(
-      context: context,
-      useRootNavigator: false,
-      builder: (context) => StatefulBuilder(
-        builder: (ctx, setState) => CountryPickerDialog(
-          languageCode: widget.languageCode.toLowerCase(),
-          style: widget.pickerDialogStyle,
-          filteredCountries: filteredCountries,
-          searchText: widget.searchText,
-          countryList: _countryList,
-          selectedCountry: _selectedCountry,
-          onCountryChanged: (Country country) {
-            _selectedCountry = country;
-            widget.onCountryChanged?.call(country);
-            setState(() {});
-          },
-        ),
-      ),
-    );
-    if (mounted) setState(() {});
   }
 
   String? _validator(String? value) {
@@ -498,27 +466,23 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
       margin: widget.flagsButtonMargin,
       child: DecoratedBox(
         decoration: widget.dropdownDecoration,
-        child: InkWell(
-          borderRadius: widget.dropdownDecoration.borderRadius as BorderRadius?,
-          onTap: widget.enabled ? _changeCountry : null,
-          child: Padding(
-            padding: widget.flagsButtonPadding,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                if (widget.showCountryFlag) ...[
-                  Text(
-                    _selectedCountry.flag,
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  const SizedBox(width: 8),
-                ],
+        child: Padding(
+          padding: widget.flagsButtonPadding,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              if (widget.showCountryFlag) ...[
                 Text(
-                  '+${_selectedCountry.dialCode}',
-                  style: widget.dropdownTextStyle,
+                  _selectedCountry.flag,
+                  style: const TextStyle(fontSize: 18),
                 ),
+                const SizedBox(width: 8),
               ],
-            ),
+              Text(
+                '+${_selectedCountry.dialCode}',
+                style: widget.dropdownTextStyle,
+              ),
+            ],
           ),
         ),
       ),
