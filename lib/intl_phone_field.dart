@@ -269,7 +269,7 @@ class IntlPhoneField extends StatefulWidget {
     this.autovalidateMode = AutovalidateMode.onUserInteraction,
     this.showCountryFlag = true,
     this.cursorColor,
-    this.disableLengthCheck = false,
+    this.disableLengthCheck = true,
     this.flagsButtonPadding = EdgeInsets.zero,
     this.invalidNumberMessage = 'Invalid Mobile Number',
     this.cursorHeight,
