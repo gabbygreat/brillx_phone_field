@@ -44,8 +44,6 @@ class IntlPhoneField extends StatefulWidget {
   /// Or run synchronously when declared as a [Function].
   ///
   /// By default, the validator checks whether the input number length is between selected country's phone numbers min and max length.
-  /// If `disableLengthCheck` is not set to `true`, your validator returned value will be overwritten by the default validator.
-  /// But, if `disableLengthCheck` is set to `true`, your validator will have to check phone number length itself.
   final FutureOr<String?> Function(PhoneNumber?)? validator;
 
   /// Controls the text being edited.
@@ -150,9 +148,6 @@ class IntlPhoneField extends StatefulWidget {
   ///
   /// If null, defaults to the `subtitle1` text style from the current [Theme].
   final TextStyle? style;
-
-  /// Disable view Min/Max Length check
-  final bool disableLengthCheck;
 
   /// Won't work if [enabled] is set to `false`.
   final bool showDropdownIcon;
@@ -269,7 +264,6 @@ class IntlPhoneField extends StatefulWidget {
     this.autovalidateMode = AutovalidateMode.onUserInteraction,
     this.showCountryFlag = true,
     this.cursorColor,
-    this.disableLengthCheck = true,
     this.flagsButtonPadding = EdgeInsets.zero,
     this.invalidNumberMessage = 'Invalid Mobile Number',
     this.cursorHeight,
@@ -343,13 +337,9 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
 
   String? _validator(String? value) {
     if (value == null || !isNumeric(value)) return validatorMessage;
-    if (!widget.disableLengthCheck) {
-      return value.length >= _selectedCountry.minLength && value.length <= _selectedCountry.maxLength
-          ? null
-          : widget.invalidNumberMessage;
-    }
-
-    return validatorMessage;
+    return value.length >= _selectedCountry.minLength && value.length <= _selectedCountry.maxLength
+        ? null
+        : widget.invalidNumberMessage;
   }
 
   @override
@@ -445,7 +435,7 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
               widget.onChanged?.call(phoneNumber);
             },
             validator: _validator,
-            maxLength: widget.disableLengthCheck ? null : _selectedCountry.maxLength,
+            maxLengthEnforcement: MaxLengthEnforcement.none,
             keyboardType: TextInputType.phone,
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
