@@ -336,6 +336,9 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
   }
 
   String? _validator(String? value) {
+    if (value?.isEmpty == true) {
+      return 'Phone number must not be empty';
+    }
     if (value == null || !isNumeric(value)) return validatorMessage;
     return value.length >= _selectedCountry.minLength && value.length <= _selectedCountry.maxLength
         ? null
@@ -363,7 +366,6 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
             autofocus: widget.autofocus,
             autovalidateMode: widget.autovalidateMode,
             style: widget.style,
-            validator: _validator,
             decoration: widget.decoration.copyWith(
               suffixIcon: _buildFlagsButton(),
               contentPadding: EdgeInsets.zero,

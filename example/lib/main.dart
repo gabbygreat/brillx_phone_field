@@ -40,7 +40,6 @@ class _MyAppState extends State<MyApp> {
                 const SizedBox(height: 30),
                 IntlPhoneField(
                   initialCountryCode: 'INVALID',
-                  initialValue: '80343390',
                   decoration: const InputDecoration(
                     labelText: ' Phone Number',
                     border: OutlineInputBorder(
