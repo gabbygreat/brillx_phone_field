@@ -435,7 +435,6 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
               widget.onChanged?.call(phoneNumber);
             },
             validator: _validator,
-            maxLengthEnforcement: MaxLengthEnforcement.none,
             keyboardType: TextInputType.phone,
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
